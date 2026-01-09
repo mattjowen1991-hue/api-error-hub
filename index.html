@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hubstaff API Error Diagnostic Tool</title>
+    <style>
+        :root {
+            --primary: #39b54a;
+            --primary-dark: #2d9440;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --dark: #1a1a2e;
+            --darker: #16213e;
+            --card-bg: #0f3460;
+            --text: #e8e8e8;
+            --text-muted: #a0a0a0;
+            --border: #2a4a7a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .panel h2 {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel h2 .icon {
+            font-size: 1.3rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            background: var(--darker);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: #3a5a8a;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        /* Analysis Results */
+        .results-section {
+            margin-top: 24px;
+            display: none;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .extracted-info {
+            background: var(--darker);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .extracted-info h3 {
+            font-size: 0.95rem;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .info-item {
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .info-item.not-found {
+            border-left-color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-weight: 600;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+        }
+
+        .info-value.code {
+            color: var(--warning);
+        }
+
+        /* Matched Errors */
+        .matched-errors h3 {
+            font-size: 0.95rem;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .error-card {
+            background: var(--darker);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .error-card.exact-match {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(57, 181, 74, 0.15);
+        }
+
+        .error-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .error-code-display {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .error-num {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--warning);
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+        }
+
+        .error-key {
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background: var(--card-bg);
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .error-category {
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .category-auth { background: #dc354520; color: #ff6b6b; }
+        .category-validation { background: #ffc10720; color: #ffc107; }
+        .category-resource { background: #17a2b820; color: #17a2b8; }
+        .category-rate { background: #6f42c120; color: #a78bfa; }
+        .category-time { background: #fd7e1420; color: #fd7e14; }
+        .category-system { background: #6c757d20; color: #adb5bd; }
+
+        .error-message {
+            font-size: 1rem;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: var(--card-bg);
+            border-radius: 6px;
+            border-left: 3px solid var(--warning);
+        }
+
+        .support-guidance {
+            background: rgba(57, 181, 74, 0.1);
+            border: 1px solid rgba(57, 181, 74, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .support-guidance h4 {
+            font-size: 0.85rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .support-guidance p {
+            font-size: 0.9rem;
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        .support-guidance ul {
+            margin: 10px 0 0 20px;
+            font-size: 0.9rem;
+        }
+
+        .support-guidance li {
+            margin-bottom: 6px;
+        }
+
+        .match-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .match-exact {
+            background: var(--primary);
+            color: white;
+        }
+
+        .match-related {
+            background: var(--info);
+            color: white;
+        }
+
+        /* Error Browser Panel */
+        .search-box {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            background: var(--darker);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .search-box .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .category-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary);
+            color: var(--text);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .error-list {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .error-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .error-list::-webkit-scrollbar-track {
+            background: var(--darker);
+            border-radius: 3px;
+        }
+
+        .error-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .error-list-item {
+            padding: 14px;
+            background: var(--darker);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .error-list-item:hover {
+            border-color: var(--primary);
+            transform: translateX(4px);
+        }
+
+        .error-list-item .code-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .error-list-item .code {
+            font-weight: 700;
+            color: var(--warning);
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+        }
+
+        .error-list-item .key {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+        }
+
+        .error-list-item .message {
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Modal for error details */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 12px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.1rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--text);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Context snippet */
+        .context-snippet {
+            background: var(--darker);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+            border-left: 3px solid var(--info);
+        }
+
+        .context-snippet h4 {
+            font-size: 0.8rem;
+            color: var(--info);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .context-snippet code {
+            display: block;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .highlight {
+            background: rgba(255, 193, 7, 0.3);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 Hubstaff API Error Diagnostic Tool</h1>
+            <p>Analyze customer messages to identify API errors and get support guidance</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="analyzer">📋 Message Analyzer</button>
+            <button class="tab" data-tab="browser">📚 Error Browser</button>
+        </div>
+
+        <div class="tab-content active" id="analyzer-tab">
+            <div class="main-grid">
+                <div class="panel">
+                    <h2><span class="icon">📋</span> Paste Customer Message</h2>
+                    <textarea id="customerMessage" placeholder="Paste the customer's message here...
+
+Example:
+When attempting to create/update a task in a project that is linked via the native Redmine integration, we receive the following response:
+
+{
+  &quot;code&quot;: &quot;invalid_params&quot;,
+  &quot;error_code&quot;: 11000,
+  &quot;error&quot;: &quot;Can not create a task for a project with a task integration&quot;
+}"></textarea>
+                    <div class="button-row">
+                        <button class="btn btn-primary" onclick="analyzeMessage()">
+                            🔍 Analyze Message
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearAnalysis()">
+                            ✕ Clear
+                        </button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2><span class="icon">📊</span> Analysis Results</h2>
+                    
+                    <div id="noAnalysis" style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">🔍</div>
+                        <p>Paste a customer message and click "Analyze" to identify errors</p>
+                    </div>
+
+                    <div class="results-section" id="resultsSection">
+                        <div class="extracted-info">
+                            <h3>📌 Extracted Information</h3>
+                            <div class="info-grid" id="extractedInfo"></div>
+                        </div>
+
+                        <div class="matched-errors">
+                            <h3>🎯 Matched Errors</h3>
+                            <div id="matchedErrors"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="browser-tab">
+            <div class="panel">
+                <h2><span class="icon">📚</span> All Error Codes</h2>
+                
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="errorSearch" placeholder="Search by code, key, or message..." oninput="filterErrors()">
+                </div>
+
+                <div class="category-filters">
+                    <button class="filter-btn active" data-category="all" onclick="setCategory('all')">All</button>
+                    <button class="filter-btn" data-category="auth" onclick="setCategory('auth')">Auth (10xxx)</button>
+                    <button class="filter-btn" data-category="validation" onclick="setCategory('validation')">Validation (11xxx)</button>
+                    <button class="filter-btn" data-category="resource" onclick="setCategory('resource')">Resource (12xxx)</button>
+                    <button class="filter-btn" data-category="rate" onclick="setCategory('rate')">Rate Limit (13xxx)</button>
+                    <button class="filter-btn" data-category="time" onclick="setCategory('time')">Time/Activity (14xxx)</button>
+                    <button class="filter-btn" data-category="system" onclick="setCategory('system')">System (15xxx)</button>
+                </div>
+
+                <div class="stats-bar">
+                    <span id="errorCount">47 error codes</span>
+                    <span>Last updated: Live from API</span>
+                </div>
+
+                <div class="error-list" id="errorList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Detail Modal -->
+    <div class="modal-overlay" id="errorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Error Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        // Error codes database from Hubstaff API
+        const errorCodes = [
+            {"code":10001,"key":"auth_not_authorized","message":"You do not have the access rights required to do this action."},
+            {"code":10002,"key":"auth_bad_request","message":"The request was invalid."},
+            {"code":10003,"key":"auth_forbidden","message":"You do not have permission to perform this action."},
+            {"code":10004,"key":"auth_financials_forbidden","message":"Rates cannot be set - you don't have permission to manage financials."},
+            {"code":11000,"key":"validation_invalid_params","message":"The provided parameters are invalid."},
+            {"code":11001,"key":"validation_record_invalid","message":"Validation failed."},
+            {"code":11002,"key":"validation_record_not_unique","message":"A record with these values already exists."},
+            {"code":11003,"key":"validation_lock_version","message":"The record has been modified. Please refresh and try again."},
+            {"code":11004,"key":"validation_duplicate_assignment","message":"Duplicate assignment is not allowed."},
+            {"code":12000,"key":"resource_not_found","message":"The resource was not found."},
+            {"code":12001,"key":"resource_update_in_progress","message":"Another update is currently in progress. Please try again in a few moments."},
+            {"code":12002,"key":"resource_user_project_access","message":"User does not have access to the project."},
+            {"code":12003,"key":"resource_user_task_access","message":"User does not have access to the task."},
+            {"code":13000,"key":"rate_limit_exceeded","message":"Rate limit has been reached. Please wait before making your next request."},
+            {"code":13001,"key":"rate_limit_invites","message":"Cannot create invites, organization has hit the rate limit."},
+            {"code":14000,"key":"time_entry_create_error","message":"Failed to create time entry."},
+            {"code":14001,"key":"time_entry_approval_required","message":"Manual time entries require approval and can't be added through the API. Please submit the manual time request via the web app for manager approval."},
+            {"code":14002,"key":"time_entry_limits_reached","message":"Limit has been reached."},
+            {"code":14003,"key":"time_entry_outdated","message":"The time entry has been modified. Please refresh and try again."},
+            {"code":14004,"key":"time_entry_invalid","message":"The time entry is invalid."},
+            {"code":14100,"key":"activity_cannot_overwrite","message":"Cannot overwrite existing client activity."},
+            {"code":14101,"key":"activity_locked","message":"Cannot overwrite locked activity."},
+            {"code":14102,"key":"activity_period_restricted","message":"Adding time for this period is restricted."},
+            {"code":14103,"key":"activity_existing","message":"Cannot overwrite existing activity."},
+            {"code":14104,"key":"activity_cannot_move","message":"Activity cannot be moved."},
+            {"code":14105,"key":"activity_override_collision","message":"Conflicting activity detected. Please confirm the override."},
+            {"code":14200,"key":"activity_invalid_project","message":"The user does not have access to this project."},
+            {"code":14201,"key":"activity_invalid_task","message":"The task is not associated with the selected project or the user is not a member."},
+            {"code":14202,"key":"activity_inactive_task","message":"The task is deleted, archived, or completed."},
+            {"code":14203,"key":"activity_invalid_user","message":"Invalid user specified."},
+            {"code":14204,"key":"activity_other_project","message":"There are other projects in this time range."},
+            {"code":14205,"key":"activity_other_task","message":"There are other tasks in this time range."},
+            {"code":14206,"key":"activity_project_not_accessible","message":"You do not have permission to modify time for projects in this range."},
+            {"code":14300,"key":"activity_limit_exceeded","message":"The limit would be exceeded."},
+            {"code":14301,"key":"activity_limit_reached","message":"The limit has already been reached."},
+            {"code":14302,"key":"activity_dow_restriction","message":"Time tracking is restricted to certain days of the week."},
+            {"code":14303,"key":"activity_shift_restriction","message":"Time tracking is only allowed during scheduled shifts."},
+            {"code":14304,"key":"activity_project_limit","message":"Adding this time will exceed the project's budget."},
+            {"code":14305,"key":"activity_project_limit_no_rate","message":"Time cannot be tracked because the project has a budget limit but member has no hourly rate set."},
+            {"code":14400,"key":"activity_permission_denied","message":"You do not have permission to perform this action."},
+            {"code":14401,"key":"activity_modify_disabled","message":"Time editing is disabled."},
+            {"code":14402,"key":"activity_retention_policy","message":"Data is before the retention policy limit."},
+            {"code":14403,"key":"activity_timesheet_locked","message":"You cannot add or change time unless your timesheet is open."},
+            {"code":14404,"key":"activity_work_break_overlap","message":"Time entry overlaps with work breaks."},
+            {"code":14405,"key":"activity_existing_screen","message":"A screenshot already exists for this time."},
+            {"code":15000,"key":"system_unknown_error","message":"An unexpected error occurred."},
+            {"code":15001,"key":"system_service_unavailable","message":"Server timeout. If your request involves pagination, consider decreasing the number of items per page."}
+        ];
+
+        // Support guidance for common errors
+        const supportGuidance = {
+            10001: {
+                title: "Authorization Issue",
+                guidance: "The user's API token may not have the required permissions for this action.",
+                steps: [
+                    "Verify the user has the correct role in the organization (Owner, Admin, Manager, etc.)",
+                    "Check if the token has the required scopes (hubstaff:read, hubstaff:write)",
+                    "Confirm the user has access to the specific resource (project, team, etc.)"
+                ]
+            },
+            10003: {
+                title: "Permission Denied",
+                guidance: "The user's role doesn't allow this action.",
+                steps: [
+                    "Check the user's role in Organization Settings",
+                    "Review what permissions are needed for this endpoint",
+                    "If they need elevated access, they should contact their org admin"
+                ]
+            },
+            10004: {
+                title: "Financials Permission Required",
+                guidance: "Setting pay rates or bill rates requires 'Manage Financials' permission.",
+                steps: [
+                    "Only Owners and Admins with 'Manage Financials' can set rates",
+                    "The user should contact their organization owner to get this permission",
+                    "Check Organization Settings → Members → [User] → Permissions"
+                ]
+            },
+            11000: {
+                title: "Invalid Parameters",
+                guidance: "The API request contains invalid or missing parameters. This is often seen when trying to create tasks in projects with external integrations.",
+                steps: [
+                    "If related to task creation with an integration (Jira, Redmine, Asana, etc.): Tasks MUST be created in the source system, not via the API",
+                    "Check that all required fields are included in the request",
+                    "Verify data types match what's expected (strings vs integers, date formats, etc.)",
+                    "Review the specific endpoint documentation for required parameters"
+                ]
+            },
+            11002: {
+                title: "Duplicate Record",
+                guidance: "A record with these values already exists in the system.",
+                steps: [
+                    "Check if the resource (user, project, task, etc.) already exists",
+                    "If creating an assignment, verify the user isn't already assigned",
+                    "Use a GET request first to check existing records"
+                ]
+            },
+            11003: {
+                title: "Concurrent Modification",
+                guidance: "The record was modified by someone else while the user was editing.",
+                steps: [
+                    "Fetch the latest version of the record and retry",
+                    "This often happens with rapidly updated resources",
+                    "Consider implementing optimistic locking in their integration"
+                ]
+            },
+            12000: {
+                title: "Resource Not Found",
+                guidance: "The requested resource doesn't exist or the user doesn't have access to it.",
+                steps: [
+                    "Verify the ID is correct (project_id, user_id, task_id, etc.)",
+                    "Check if the resource was deleted or archived",
+                    "Confirm the user has access to view this resource"
+                ]
+            },
+            12002: {
+                title: "Project Access Issue",
+                guidance: "The user isn't a member of the specified project.",
+                steps: [
+                    "Add the user to the project in Settings → Projects → [Project] → Members",
+                    "Check if the project exists and is active",
+                    "Verify they're using the correct project_id"
+                ]
+            },
+            13000: {
+                title: "Rate Limit Exceeded",
+                guidance: "Too many API requests in a short period.",
+                steps: [
+                    "Implement exponential backoff in their integration",
+                    "Current limit is 350 requests per minute",
+                    "Check the X-RateLimit-* headers for limit details",
+                    "Consider caching responses to reduce API calls"
+                ]
+            },
+            14001: {
+                title: "Manual Time Approval Required",
+                guidance: "The organization has enabled 'Require approval for manual time' which blocks API time entries.",
+                steps: [
+                    "This is an organization policy setting, not a bug",
+                    "Manual time must be submitted through the web app for manager approval",
+                    "If they need API access for time entries, the org admin must disable this setting",
+                    "Check Organization Settings → Time Tracking → Manual time approval"
+                ]
+            },
+            14101: {
+                title: "Activity Locked",
+                guidance: "The time period is locked and cannot be modified.",
+                steps: [
+                    "Check if timesheets are locked for this period",
+                    "Managers may need to unlock the timesheet first",
+                    "Review the organization's timesheet locking policy"
+                ]
+            },
+            14102: {
+                title: "Period Restricted",
+                guidance: "Adding time for this historical period is not allowed.",
+                steps: [
+                    "Check the organization's time entry restriction settings",
+                    "Some orgs restrict adding time more than X days in the past",
+                    "Contact org admin to adjust restriction or manually add the time"
+                ]
+            },
+            14403: {
+                title: "Timesheet Locked",
+                guidance: "The user's timesheet for this period is locked/submitted.",
+                steps: [
+                    "The timesheet needs to be reopened by a manager",
+                    "Check Settings → Time Tracking → Timesheet status",
+                    "Manager can unlock via the Timesheets page"
+                ]
+            },
+            15000: {
+                title: "System Error",
+                guidance: "An unexpected server error occurred.",
+                steps: [
+                    "Try the request again after a few moments",
+                    "If persistent, gather request details (endpoint, payload, headers)",
+                    "Escalate to engineering with full reproduction steps"
+                ]
+            },
+            15001: {
+                title: "Server Timeout",
+                guidance: "The request took too long to process.",
+                steps: [
+                    "Reduce the page_limit or date range in the request",
+                    "For large data exports, use pagination",
+                    "If querying reports, narrow the date range",
+                    "Try the request during off-peak hours"
+                ]
+            }
+        };
+
+        // Get category from error code
+        function getCategory(code) {
+            if (code >= 10000 && code < 11000) return 'auth';
+            if (code >= 11000 && code < 12000) return 'validation';
+            if (code >= 12000 && code < 13000) return 'resource';
+            if (code >= 13000 && code < 14000) return 'rate';
+            if (code >= 14000 && code < 15000) return 'time';
+            if (code >= 15000 && code < 16000) return 'system';
+            return 'unknown';
+        }
+
+        // Get category display name
+        function getCategoryName(category) {
+            const names = {
+                'auth': 'Authentication',
+                'validation': 'Validation',
+                'resource': 'Resource',
+                'rate': 'Rate Limit',
+                'time': 'Time/Activity',
+                'system': 'System'
+            };
+            return names[category] || 'Unknown';
+        }
+
+        // Current filter state
+        let currentCategory = 'all';
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+            });
+        });
+
+        // Analyze customer message
+        function analyzeMessage() {
+            const message = document.getElementById('customerMessage').value;
+            if (!message.trim()) {
+                alert('Please paste a customer message first');
+                return;
+            }
+
+            const extracted = extractInfo(message);
+            const matches = findMatches(extracted, message);
+
+            displayResults(extracted, matches, message);
+        }
+
+        // Extract error information from message
+        function extractInfo(message) {
+            const info = {
+                errorCode: null,
+                errorKey: null,
+                errorMessage: null,
+                httpStatus: null,
+                endpoint: null,
+                context: []
+            };
+
+            // Look for error_code (numeric)
+            const codeMatch = message.match(/"error_code"\s*:\s*(\d+)/i);
+            if (codeMatch) {
+                info.errorCode = parseInt(codeMatch[1]);
+            }
+
+            // Look for code (string key)
+            const keyMatch = message.match(/"code"\s*:\s*"([^"]+)"/i);
+            if (keyMatch) {
+                info.errorKey = keyMatch[1];
+            }
+
+            // Look for error message
+            const msgMatch = message.match(/"error"\s*:\s*"([^"]+)"/i);
+            if (msgMatch) {
+                info.errorMessage = msgMatch[1];
+            }
+
+            // Look for HTTP status codes
+            const httpMatch = message.match(/\b(400|401|403|404|429|500|502|503)\b/);
+            if (httpMatch) {
+                info.httpStatus = httpMatch[1];
+            }
+
+            // Look for endpoints mentioned
+            const endpointPatterns = [
+                /(?:GET|POST|PUT|PATCH|DELETE)\s+([\/\w\-]+)/gi,
+                /\/v2\/[\w\-\/]+/gi,
+                /\/v1\/[\w\-\/]+/gi
+            ];
+            
+            for (const pattern of endpointPatterns) {
+                const matches = message.match(pattern);
+                if (matches) {
+                    info.endpoint = matches[0];
+                    break;
+                }
+            }
+
+            // Extract context keywords
+            const contextKeywords = [
+                'task', 'project', 'time entry', 'activity', 'user', 'team',
+                'integration', 'Jira', 'Redmine', 'Asana', 'Trello', 'GitHub',
+                'rate', 'limit', 'permission', 'access', 'authorization',
+                'create', 'update', 'delete', 'sync', 'webhook'
+            ];
+
+            const lowerMessage = message.toLowerCase();
+            for (const keyword of contextKeywords) {
+                if (lowerMessage.includes(keyword.toLowerCase())) {
+                    info.context.push(keyword);
+                }
+            }
+
+            return info;
+        }
+
+        // Find matching errors
+        function findMatches(extracted, message) {
+            const matches = [];
+            const lowerMessage = message.toLowerCase();
+
+            // Exact match by error code
+            if (extracted.errorCode) {
+                const exactMatch = errorCodes.find(e => e.code === extracted.errorCode);
+                if (exactMatch) {
+                    matches.push({ ...exactMatch, matchType: 'exact' });
+                }
+            }
+
+            // Match by key
+            if (extracted.errorKey && matches.length === 0) {
+                const keyMatch = errorCodes.find(e => 
+                    e.key.toLowerCase().includes(extracted.errorKey.toLowerCase()) ||
+                    extracted.errorKey.toLowerCase().includes(e.key.toLowerCase())
+                );
+                if (keyMatch && !matches.find(m => m.code === keyMatch.code)) {
+                    matches.push({ ...keyMatch, matchType: 'exact' });
+                }
+            }
+
+            // Find related errors based on context
+            if (extracted.context.length > 0) {
+                for (const error of errorCodes) {
+                    if (matches.find(m => m.code === error.code)) continue;
+
+                    const errorText = `${error.key} ${error.message}`.toLowerCase();
+                    let relevance = 0;
+
+                    for (const ctx of extracted.context) {
+                        if (errorText.includes(ctx.toLowerCase())) {
+                            relevance++;
+                        }
+                    }
+
+                    // Also check if error message appears in customer message
+                    if (lowerMessage.includes(error.message.toLowerCase().substring(0, 30))) {
+                        relevance += 3;
+                    }
+
+                    if (relevance >= 2) {
+                        matches.push({ ...error, matchType: 'related', relevance });
+                    }
+                }
+            }
+
+            // Sort related matches by relevance
+            matches.sort((a, b) => {
+                if (a.matchType === 'exact' && b.matchType !== 'exact') return -1;
+                if (a.matchType !== 'exact' && b.matchType === 'exact') return 1;
+                return (b.relevance || 0) - (a.relevance || 0);
+            });
+
+            return matches.slice(0, 5); // Top 5 matches
+        }
+
+        // Display results
+        function displayResults(extracted, matches, originalMessage) {
+            document.getElementById('noAnalysis').style.display = 'none';
+            document.getElementById('resultsSection').classList.add('visible');
+
+            // Display extracted info
+            const infoHtml = `
+                <div class="info-item ${extracted.errorCode ? '' : 'not-found'}">
+                    <div class="info-label">Error Code</div>
+                    <div class="info-value code">${extracted.errorCode || 'Not found'}</div>
+                </div>
+                <div class="info-item ${extracted.errorKey ? '' : 'not-found'}">
+                    <div class="info-label">Error Key</div>
+                    <div class="info-value">${extracted.errorKey || 'Not found'}</div>
+                </div>
+                <div class="info-item ${extracted.httpStatus ? '' : 'not-found'}">
+                    <div class="info-label">HTTP Status</div>
+                    <div class="info-value">${extracted.httpStatus || 'Not found'}</div>
+                </div>
+                <div class="info-item ${extracted.endpoint ? '' : 'not-found'}">
+                    <div class="info-label">Endpoint</div>
+                    <div class="info-value">${extracted.endpoint || 'Not found'}</div>
+                </div>
+                ${extracted.context.length > 0 ? `
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <div class="info-label">Detected Context</div>
+                    <div class="info-value">${extracted.context.join(', ')}</div>
+                </div>
+                ` : ''}
+            `;
+            document.getElementById('extractedInfo').innerHTML = infoHtml;
+
+            // Display matched errors
+            if (matches.length === 0) {
+                document.getElementById('matchedErrors').innerHTML = `
+                    <div class="no-results">
+                        <p>No matching errors found. Try the Error Browser to search manually.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let errorsHtml = '';
+            for (const match of matches) {
+                const category = getCategory(match.code);
+                const guidance = supportGuidance[match.code];
+
+                errorsHtml += `
+                    <div class="error-card ${match.matchType === 'exact' ? 'exact-match' : ''}">
+                        <div class="error-header">
+                            <div class="error-code-display">
+                                <span class="error-num">${match.code}</span>
+                                <span class="error-key">${match.key}</span>
+                                <span class="match-badge ${match.matchType === 'exact' ? 'match-exact' : 'match-related'}">
+                                    ${match.matchType === 'exact' ? 'Exact Match' : 'Related'}
+                                </span>
+                            </div>
+                            <span class="error-category category-${category}">${getCategoryName(category)}</span>
+                        </div>
+                        <div class="error-message">${match.message}</div>
+                        ${guidance ? `
+                        <div class="support-guidance">
+                            <h4>💡 ${guidance.title}</h4>
+                            <p>${guidance.guidance}</p>
+                            ${guidance.steps ? `
+                            <ul>
+                                ${guidance.steps.map(s => `<li>${s}</li>`).join('')}
+                            </ul>
+                            ` : ''}
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            document.getElementById('matchedErrors').innerHTML = errorsHtml;
+        }
+
+        // Clear analysis
+        function clearAnalysis() {
+            document.getElementById('customerMessage').value = '';
+            document.getElementById('noAnalysis').style.display = 'block';
+            document.getElementById('resultsSection').classList.remove('visible');
+        }
+
+        // Filter errors in browser
+        function filterErrors() {
+            renderErrorList();
+        }
+
+        function setCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.category === category);
+            });
+            renderErrorList();
+        }
+
+        function renderErrorList() {
+            const search = document.getElementById('errorSearch').value.toLowerCase();
+            
+            let filtered = errorCodes.filter(error => {
+                // Category filter
+                if (currentCategory !== 'all' && getCategory(error.code) !== currentCategory) {
+                    return false;
+                }
+                
+                // Search filter
+                if (search) {
+                    const searchText = `${error.code} ${error.key} ${error.message}`.toLowerCase();
+                    return searchText.includes(search);
+                }
+                
+                return true;
+            });
+
+            document.getElementById('errorCount').textContent = `${filtered.length} error codes`;
+
+            if (filtered.length === 0) {
+                document.getElementById('errorList').innerHTML = `
+                    <div class="no-results">
+                        <p>No errors match your search</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            for (const error of filtered) {
+                const category = getCategory(error.code);
+                html += `
+                    <div class="error-list-item" onclick="showErrorDetail(${error.code})">
+                        <div class="code-row">
+                            <span class="code">${error.code}</span>
+                            <span class="error-category category-${category}">${getCategoryName(category)}</span>
+                        </div>
+                        <div class="key">${error.key}</div>
+                        <div class="message">${error.message}</div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('errorList').innerHTML = html;
+        }
+
+        // Show error detail modal
+        function showErrorDetail(code) {
+            const error = errorCodes.find(e => e.code === code);
+            if (!error) return;
+
+            const category = getCategory(code);
+            const guidance = supportGuidance[code];
+
+            document.getElementById('modalTitle').textContent = `Error ${code}`;
+            document.getElementById('modalBody').innerHTML = `
+                <div class="error-card">
+                    <div class="error-header">
+                        <div class="error-code-display">
+                            <span class="error-num">${error.code}</span>
+                            <span class="error-key">${error.key}</span>
+                        </div>
+                        <span class="error-category category-${category}">${getCategoryName(category)}</span>
+                    </div>
+                    <div class="error-message">${error.message}</div>
+                    ${guidance ? `
+                    <div class="support-guidance">
+                        <h4>💡 ${guidance.title}</h4>
+                        <p>${guidance.guidance}</p>
+                        ${guidance.steps ? `
+                        <ul>
+                            ${guidance.steps.map(s => `<li>${s}</li>`).join('')}
+                        </ul>
+                        ` : ''}
+                    </div>
+                    ` : `
+                    <div class="support-guidance">
+                        <h4>💡 Support Guidance</h4>
+                        <p>No specific guidance available for this error. Review the error message and check the API documentation for the endpoint being used.</p>
+                    </div>
+                    `}
+                </div>
+            `;
+
+            document.getElementById('errorModal').classList.add('visible');
+        }
+
+        function closeModal() {
+            document.getElementById('errorModal').classList.remove('visible');
+        }
+
+        // Close modal on overlay click
+        document.getElementById('errorModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('errorModal')) {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Initialize
+        renderErrorList();
+    </script>
+</body>
+</html>
