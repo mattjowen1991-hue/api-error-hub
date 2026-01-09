@@ -643,9 +643,13 @@ When attempting to create/update a task in a project that is linked via the nati
                         </div>
 
                         <div class="matched-errors">
-                            <h3>🎯 Matched Errors</h3>
-                            <div id="matchedErrors"></div>
-                        </div>
+    <h3>🎯 Matched Errors</h3>
+    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; display: flex; gap: 16px; flex-wrap: wrap;">
+        <span><span class="match-badge match-exact" style="font-size: 0.65rem; vertical-align: middle;">Exact Match</span> = Error code/key found in message</span>
+        <span><span class="match-badge match-related" style="font-size: 0.65rem; vertical-align: middle;">Related</span> = Suggested based on keywords</span>
+    </div>
+    <div id="matchedErrors"></div>
+</div>
                     </div>
                 </div>
             </div>
@@ -1117,9 +1121,9 @@ When attempting to create/update a task in a project that is linked via the nati
                             <div class="error-code-display">
                                 <span class="error-num">${match.code}</span>
                                 <span class="error-key">${match.key}</span>
-                                <span class="match-badge ${match.matchType === 'exact' ? 'match-exact' : 'match-related'}">
-                                    ${match.matchType === 'exact' ? 'Exact Match' : 'Related'}
-                                </span>
+                                <span class="match-badge ${match.matchType === 'exact' ? 'match-exact' : 'match-related'}" title="${match.matchType === 'exact' ? 'Error code or key found directly in the message' : 'Suggested based on context keywords - verify with customer'}">
+    ${match.matchType === 'exact' ? 'Exact Match' : 'Related'}
+</span>
                             </div>
                             <span class="error-category category-${category}">${getCategoryName(category)}</span>
                         </div>
