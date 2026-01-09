@@ -590,6 +590,102 @@
             padding: 2px 4px;
             border-radius: 3px;
         }
+
+        /* No Guidance Alert */
+.no-guidance-alert {
+    background: rgba(255, 193, 7, 0.15);
+    border: 1px solid rgba(255, 193, 7, 0.4);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.no-guidance-alert h4 {
+    font-size: 0.85rem;
+    color: var(--warning);
+    margin-bottom: 8px;
+}
+
+.no-guidance-alert p {
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+        /* Error Actions */
+.error-actions {
+    margin-bottom: 16px;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    background: var(--border);
+    color: var(--text);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-small:hover {
+    background: var(--primary);
+    color: white;
+}
+
+        /* Usage Stats */
+.usage-stats {
+    background: var(--darker);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 20px;
+    border: 1px solid var(--border);
+}
+
+.usage-stats h4 {
+    font-size: 0.85rem;
+    color: var(--primary);
+    margin-bottom: 12px;
+}
+
+.usage-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+}
+
+.usage-item:last-child {
+    border-bottom: none;
+}
+
+.usage-code {
+    font-weight: 600;
+    color: var(--warning);
+    font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+}
+
+.usage-count {
+    background: var(--card-bg);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.clear-stats {
+    margin-top: 12px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.clear-stats:hover {
+    color: var(--danger);
+}
     </style>
 </head>
 <body>
@@ -650,6 +746,11 @@ When attempting to create/update a task in a project that is linked via the nati
     </div>
     <div id="matchedErrors"></div>
 </div>
+                    </div>
+                    <div class="usage-stats" id="usageStats">
+                        <h4>📊 Most Searched Errors</h4>
+                        <div id="usageList"></div>
+                        <button class="clear-stats" onclick="clearUsageStats()">Clear statistics</button>
                     </div>
                 </div>
             </div>
@@ -1071,6 +1172,13 @@ When attempting to create/update a task in a project that is linked via the nati
         // Display results
         function displayResults(extracted, matches, originalMessage) {
             document.getElementById('noAnalysis').style.display = 'none';
+
+            // Track usage for exact matches
+for (const match of matches) {
+    if (match.matchType === 'exact') {
+        trackError(match.code);
+    }
+}
             document.getElementById('resultsSection').classList.add('visible');
 
             // Display extracted info
@@ -1128,17 +1236,27 @@ When attempting to create/update a task in a project that is linked via the nati
                             <span class="error-category category-${category}">${getCategoryName(category)}</span>
                         </div>
                         <div class="error-message">${match.message}</div>
+<div class="error-actions">
+    <button class="btn-small" onclick="searchApiHub('${match.key.replace('_', ' ')}')" title="Search API Hub for related endpoints">
+        🔗 Search API Hub
+    </button>
+</div>
                         ${guidance ? `
-                        <div class="support-guidance">
-                            <h4>💡 ${guidance.title}</h4>
-                            <p>${guidance.guidance}</p>
-                            ${guidance.steps ? `
-                            <ul>
-                                ${guidance.steps.map(s => `<li>${s}</li>`).join('')}
-                            </ul>
-                            ` : ''}
-                        </div>
-                        ` : ''}
+<div class="support-guidance">
+    <h4>💡 ${guidance.title}</h4>
+    <p>${guidance.guidance}</p>
+    ${guidance.steps ? `
+    <ul>
+        ${guidance.steps.map(s => `<li>${s}</li>`).join('')}
+    </ul>
+    ` : ''}
+</div>
+` : `
+<div class="no-guidance-alert">
+    <h4>⚠️ No Guidance Available</h4>
+    <p>Error <strong>${match.code}</strong> (${match.key}) doesn't have support guidance yet. Please add a guidance block and refresh.</p>
+</div>
+`}
                     </div>
                 `;
             }
@@ -1270,8 +1388,57 @@ When attempting to create/update a task in a project that is linked via the nati
             if (e.key === 'Escape') closeModal();
         });
 
+        // Search API Hub
+function searchApiHub(query) {
+    // Update this URL to match your API Hub file location
+    const apiHubUrl = 'index.html';
+    window.open(`${apiHubUrl}?search=${encodeURIComponent(query)}`, '_blank');
+}
+
+        // Usage tracking
+function trackError(code) {
+    const stats = JSON.parse(localStorage.getItem('errorUsageStats') || '{}');
+    stats[code] = (stats[code] || 0) + 1;
+    localStorage.setItem('errorUsageStats', JSON.stringify(stats));
+    renderUsageStats();
+}
+
+function renderUsageStats() {
+    const stats = JSON.parse(localStorage.getItem('errorUsageStats') || '{}');
+    const entries = Object.entries(stats).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    
+    if (entries.length === 0) {
+        document.getElementById('usageStats').style.display = 'none';
+        return;
+    }
+    
+    document.getElementById('usageStats').style.display = 'block';
+    
+    let html = '';
+    for (const [code, count] of entries) {
+        const error = errorCodes.find(e => e.code === parseInt(code));
+        const key = error ? error.key : 'unknown';
+        html += `
+            <div class="usage-item">
+                <span><span class="usage-code">${code}</span> - ${key}</span>
+                <span class="usage-count">${count} ${count === 1 ? 'search' : 'searches'}</span>
+            </div>
+        `;
+    }
+    
+    document.getElementById('usageList').innerHTML = html;
+}
+
+function clearUsageStats() {
+    if (confirm('Clear all usage statistics?')) {
+        localStorage.removeItem('errorUsageStats');
+        renderUsageStats();
+    }
+}
+
         // Initialize
-        renderErrorList();
+renderErrorList();
+renderUsageStats();
     </script>
 </body>
 </html>
