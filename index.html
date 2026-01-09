@@ -686,6 +686,218 @@
 .clear-stats:hover {
     color: var(--danger);
 }
+
+        /* Footer */
+.app-footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.footer-link {
+    color: var(--primary);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+}
+
+/* Help Modal */
+.help-modal-content {
+    background: var(--card-bg);
+    border-radius: 12px;
+    max-width: 800px;
+    width: 100%;
+    max-height: 85vh;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+
+.help-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.help-section {
+    margin-bottom: 32px;
+}
+
+.help-section:last-child {
+    margin-bottom: 0;
+}
+
+.help-section h3 {
+    color: var(--primary);
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.help-section h4 {
+    color: var(--text);
+    font-size: 0.95rem;
+    margin: 16px 0 8px 0;
+}
+
+.help-section p {
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    line-height: 1.7;
+}
+
+.help-section ul, .help-section ol {
+    color: var(--text-muted);
+    margin-left: 20px;
+    margin-bottom: 12px;
+    line-height: 1.8;
+}
+
+.help-section li {
+    margin-bottom: 6px;
+}
+
+.help-callout {
+    background: var(--darker);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    border-left: 3px solid var(--primary);
+}
+
+.help-callout.tip {
+    border-left-color: var(--primary);
+}
+
+.help-callout.info {
+    border-left-color: var(--info);
+}
+
+.help-callout.warning {
+    border-left-color: var(--warning);
+}
+
+.help-callout-title {
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+}
+
+.help-callout p {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+.help-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 0.85rem;
+}
+
+.help-table th, .help-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.help-table th {
+    background: var(--darker);
+    color: var(--text);
+    font-weight: 600;
+}
+
+.help-table td {
+    color: var(--text-muted);
+}
+
+.help-table code {
+    background: var(--darker);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: var(--warning);
+}
+
+.help-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.help-badge.beginner {
+    background: rgba(57, 181, 74, 0.2);
+    color: var(--primary);
+}
+
+.help-badge.advanced {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+}
+
+.help-nav {
+    display: flex;
+    gap: 8px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--darker);
+    flex-wrap: wrap;
+}
+
+.help-nav-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.help-nav-btn:hover {
+    border-color: var(--primary);
+    color: var(--text);
+}
+
+.help-nav-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.help-tab-content {
+    display: none;
+}
+
+.help-tab-content.active {
+    display: block;
+}
+
+.example-box {
+    background: var(--darker);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px 0;
+    font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    white-space: pre-wrap;
+    overflow-x: auto;
+}
     </style>
 </head>
 <body>
@@ -785,6 +997,11 @@ When attempting to create/update a task in a project that is linked via the nati
         </div>
     </div>
 
+    <!-- Footer -->
+<footer class="app-footer">
+    <p>Hubstaff API Error Diagnostic Tool v1.0 • <a class="footer-link" onclick="openHelpModal()">📖 Support User Guide</a> • <a class="footer-link" href="index.html" target="_blank">🔗 API Hub</a></p>
+</footer>
+
     <!-- Error Detail Modal -->
     <div class="modal-overlay" id="errorModal">
         <div class="modal-content">
@@ -795,6 +1012,358 @@ When attempting to create/update a task in a project that is linked via the nati
             <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
+
+    <!-- Help/User Guide Modal -->
+<div class="modal-overlay" id="helpModal">
+    <div class="help-modal-content">
+        <div class="modal-header">
+            <h3>📖 Support User Guide</h3>
+            <button class="modal-close" onclick="closeHelpModal()">&times;</button>
+        </div>
+        
+        <div class="help-nav">
+            <button class="help-nav-btn active" onclick="showHelpTab('quickstart')">🚀 Quick Start</button>
+            <button class="help-nav-btn" onclick="showHelpTab('analyzer')">📋 Message Analyzer</button>
+            <button class="help-nav-btn" onclick="showHelpTab('browser')">📚 Error Browser</button>
+            <button class="help-nav-btn" onclick="showHelpTab('glossary')">📘 API Glossary</button>
+            <button class="help-nav-btn" onclick="showHelpTab('tips')">💡 Pro Tips</button>
+        </div>
+        
+        <div class="help-modal-body">
+            <!-- Quick Start Tab -->
+            <div class="help-tab-content active" id="help-quickstart">
+                <div class="help-section">
+                    <h3>🎯 What This Tool Does</h3>
+                    <p>This tool helps you quickly diagnose API errors from customer messages. Instead of searching through documentation, simply paste the customer's message and get instant guidance on what went wrong and how to help them.</p>
+                    
+                    <div class="help-callout tip">
+                        <div class="help-callout-title">💡 You don't need to understand APIs!</div>
+                        <p>This tool is designed so anyone can use it. Just paste the customer's message and let the tool do the work.</p>
+                    </div>
+                </div>
+                
+                <div class="help-section">
+                    <h3>⚡ 30-Second Guide</h3>
+                    <ol>
+                        <li><strong>Copy</strong> the customer's message (email, Slack, ticket)</li>
+                        <li><strong>Paste</strong> it into the text box on the left</li>
+                        <li><strong>Click</strong> "Analyze Message"</li>
+                        <li><strong>Read</strong> the green guidance box for troubleshooting steps</li>
+                        <li><strong>Respond</strong> to the customer using the suggested steps</li>
+                    </ol>
+                </div>
+                
+                <div class="help-section">
+                    <h3>🏷️ Understanding Match Types</h3>
+                    <table class="help-table">
+                        <tr>
+                            <th>Badge</th>
+                            <th>What It Means</th>
+                            <th>Action</th>
+                        </tr>
+                        <tr>
+                            <td><span class="match-badge match-exact">Exact Match</span></td>
+                            <td>The error code was found directly in the message</td>
+                            <td>High confidence - use the guidance provided</td>
+                        </tr>
+                        <tr>
+                            <td><span class="match-badge match-related">Related</span></td>
+                            <td>Suggested based on keywords in the message</td>
+                            <td>Verify with customer before using guidance</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Message Analyzer Tab -->
+            <div class="help-tab-content" id="help-analyzer">
+                <div class="help-section">
+                    <h3>📋 Using the Message Analyzer</h3>
+                    <p>The Message Analyzer automatically extracts error information from customer messages, even if they've pasted raw JSON or just described the problem.</p>
+                    
+                    <h4>What It Extracts <span class="help-badge beginner">Beginner</span></h4>
+                    <table class="help-table">
+                        <tr>
+                            <th>Field</th>
+                            <th>Example</th>
+                            <th>What It Tells You</th>
+                        </tr>
+                        <tr>
+                            <td>Error Code</td>
+                            <td><code>11000</code></td>
+                            <td>The specific error number from Hubstaff's system</td>
+                        </tr>
+                        <tr>
+                            <td>Error Key</td>
+                            <td><code>invalid_params</code></td>
+                            <td>A human-readable identifier for the error type</td>
+                        </tr>
+                        <tr>
+                            <td>HTTP Status</td>
+                            <td><code>400</code>, <code>401</code>, <code>403</code></td>
+                            <td>The web response code (see glossary)</td>
+                        </tr>
+                        <tr>
+                            <td>Endpoint</td>
+                            <td><code>/v2/tasks</code></td>
+                            <td>Which API feature they were trying to use</td>
+                        </tr>
+                        <tr>
+                            <td>Context</td>
+                            <td>task, project, Jira</td>
+                            <td>Keywords that help identify related errors</td>
+                        </tr>
+                    </table>
+                    
+                    <h4>JSON Error Format <span class="help-badge advanced">Advanced</span></h4>
+                    <p>Customers often paste error responses that look like this:</p>
+                    <div class="example-box">{
+  "code": "invalid_params",
+  "error_code": 11000,
+  "error": "Can not create a task for a project with a task integration"
+}</div>
+                    <p>The tool automatically parses this JSON structure to extract the error details.</p>
+                </div>
+                
+                <div class="help-section">
+                    <h3>📊 Usage Statistics</h3>
+                    <p>The "Most Searched Errors" box tracks which errors you encounter most often. This can help identify trends or common customer issues.</p>
+                    <ul>
+                        <li>Statistics are stored locally in your browser</li>
+                        <li>Only exact matches are tracked</li>
+                        <li>Click "Clear statistics" to reset</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Error Browser Tab -->
+            <div class="help-tab-content" id="help-browser">
+                <div class="help-section">
+                    <h3>📚 Browsing All Error Codes</h3>
+                    <p>The Error Browser tab lets you explore all 47 Hubstaff API error codes. Use this when you want to look up an error manually or learn about error categories.</p>
+                    
+                    <h4>Error Categories</h4>
+                    <table class="help-table">
+                        <tr>
+                            <th>Category</th>
+                            <th>Code Range</th>
+                            <th>Common Causes</th>
+                        </tr>
+                        <tr>
+                            <td><span class="error-category category-auth">Auth</span></td>
+                            <td>10000-10999</td>
+                            <td>Token expired, wrong permissions, forbidden action</td>
+                        </tr>
+                        <tr>
+                            <td><span class="error-category category-validation">Validation</span></td>
+                            <td>11000-11999</td>
+                            <td>Missing fields, invalid data, duplicate records</td>
+                        </tr>
+                        <tr>
+                            <td><span class="error-category category-resource">Resource</span></td>
+                            <td>12000-12999</td>
+                            <td>Item not found, no access to project/task</td>
+                        </tr>
+                        <tr>
+                            <td><span class="error-category category-rate">Rate Limit</span></td>
+                            <td>13000-13999</td>
+                            <td>Too many requests in short time</td>
+                        </tr>
+                        <tr>
+                            <td><span class="error-category category-time">Time/Activity</span></td>
+                            <td>14000-14999</td>
+                            <td>Time entry issues, locked timesheets, restrictions</td>
+                        </tr>
+                        <tr>
+                            <td><span class="error-category category-system">System</span></td>
+                            <td>15000-15999</td>
+                            <td>Server errors, timeouts</td>
+                        </tr>
+                    </table>
+                    
+                    <h4>Search Tips</h4>
+                    <ul>
+                        <li>Search by code number: <code>11000</code></li>
+                        <li>Search by key: <code>rate_limit</code></li>
+                        <li>Search by keyword: <code>permission</code></li>
+                        <li>Use category filters to narrow results</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Glossary Tab -->
+            <div class="help-tab-content" id="help-glossary">
+                <div class="help-section">
+                    <h3>📘 API Terms Explained</h3>
+                    <p>Don't worry if you're not familiar with API terminology. Here's what the common terms mean:</p>
+                    
+                    <h4>Basic Terms <span class="help-badge beginner">Beginner</span></h4>
+                    <table class="help-table">
+                        <tr>
+                            <th>Term</th>
+                            <th>Simple Explanation</th>
+                        </tr>
+                        <tr>
+                            <td><strong>API</strong></td>
+                            <td>A way for software programs to talk to each other. Customers use Hubstaff's API to connect their own tools to Hubstaff.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Endpoint</strong></td>
+                            <td>A specific "address" in the API. Like <code>/v2/projects</code> is the address for project data.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Token</strong></td>
+                            <td>A secret password that identifies who's making the API request. Like a key to a door.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Request</strong></td>
+                            <td>When software asks the API for something (like "give me all projects").</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Response</strong></td>
+                            <td>What the API sends back (either the data requested or an error message).</td>
+                        </tr>
+                    </table>
+                    
+                    <h4>HTTP Status Codes <span class="help-badge beginner">Beginner</span></h4>
+                    <table class="help-table">
+                        <tr>
+                            <th>Code</th>
+                            <th>Meaning</th>
+                            <th>Customer-Friendly Explanation</th>
+                        </tr>
+                        <tr>
+                            <td><code>200</code></td>
+                            <td>OK</td>
+                            <td>Everything worked! ✓</td>
+                        </tr>
+                        <tr>
+                            <td><code>400</code></td>
+                            <td>Bad Request</td>
+                            <td>Something was wrong with the request (missing data, wrong format)</td>
+                        </tr>
+                        <tr>
+                            <td><code>401</code></td>
+                            <td>Unauthorized</td>
+                            <td>The API token is invalid or expired</td>
+                        </tr>
+                        <tr>
+                            <td><code>403</code></td>
+                            <td>Forbidden</td>
+                            <td>The token works but doesn't have permission for this action</td>
+                        </tr>
+                        <tr>
+                            <td><code>404</code></td>
+                            <td>Not Found</td>
+                            <td>The thing they're looking for doesn't exist</td>
+                        </tr>
+                        <tr>
+                            <td><code>429</code></td>
+                            <td>Too Many Requests</td>
+                            <td>They've hit the rate limit - need to slow down</td>
+                        </tr>
+                        <tr>
+                            <td><code>500</code></td>
+                            <td>Server Error</td>
+                            <td>Something went wrong on Hubstaff's side</td>
+                        </tr>
+                    </table>
+                    
+                    <h4>Technical Terms <span class="help-badge advanced">Advanced</span></h4>
+                    <table class="help-table">
+                        <tr>
+                            <th>Term</th>
+                            <th>Explanation</th>
+                        </tr>
+                        <tr>
+                            <td><strong>JSON</strong></td>
+                            <td>A text format for data that looks like <code>{"key": "value"}</code>. The standard format for API communication.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>OAuth</strong></td>
+                            <td>A secure way to authorize API access without sharing passwords.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rate Limit</strong></td>
+                            <td>A cap on how many requests can be made per minute (Hubstaff allows 350/min).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pagination</strong></td>
+                            <td>Splitting large results into "pages" to avoid timeouts.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Scope</strong></td>
+                            <td>What a token is allowed to do (read-only vs read-write).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Payload</strong></td>
+                            <td>The data sent with a request (like project details when creating a project).</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Pro Tips Tab -->
+            <div class="help-tab-content" id="help-tips">
+                <div class="help-section">
+                    <h3>💡 Pro Tips for API Support</h3>
+                    
+                    <div class="help-callout tip">
+                        <div class="help-callout-title">🎯 Ask for the Full Error</div>
+                        <p>If a customer just says "I got an error", ask them to send the complete error response including any JSON. The more detail, the faster you can help.</p>
+                    </div>
+                    
+                    <div class="help-callout tip">
+                        <div class="help-callout-title">🔗 Use the API Hub Link</div>
+                        <p>Click "Search API Hub" on any matched error to find related endpoints. This helps when customers need guidance on the correct API usage.</p>
+                    </div>
+                    
+                    <div class="help-callout info">
+                        <div class="help-callout-title">📋 Common Scenarios</div>
+                        <p><strong>Integration errors (Jira, Redmine, etc.):</strong> If error 11000 mentions "task integration", the customer is trying to create tasks via API for an integrated project. Tasks must be created in the source system (Jira/Redmine), not via the Hubstaff API.</p>
+                    </div>
+                    
+                    <div class="help-callout info">
+                        <div class="help-callout-title">⏱️ Time Entry Errors</div>
+                        <p><strong>Error 14001 (approval required):</strong> The org has "manual time approval" enabled. This is a policy setting, not a bug. Time entries need to go through the web app for manager approval.</p>
+                    </div>
+                    
+                    <div class="help-callout warning">
+                        <div class="help-callout-title">⚠️ When to Escalate</div>
+                        <p>Escalate to engineering if you see:</p>
+                        <ul style="margin-top: 8px; margin-bottom: 0;">
+                            <li>Error 15000 (system error) that persists after retrying</li>
+                            <li>Error 15001 (timeout) even with small data requests</li>
+                            <li>Any error that doesn't match the customer's action</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="help-section">
+                    <h3>📝 Response Templates</h3>
+                    
+                    <h4>For Permission Errors (10001, 10003)</h4>
+                    <div class="example-box">"This error indicates your API token doesn't have permission for this action. Please check:
+1. Your role in the organization (Settings → Members)
+2. That your token has the required scopes
+3. That you have access to the specific project/resource
+
+If you need elevated permissions, please contact your organization admin."</div>
+                    
+                    <h4>For Rate Limits (13000)</h4>
+                    <div class="example-box">"You've exceeded the API rate limit of 350 requests per minute. To resolve this:
+1. Add delays between your API calls
+2. Implement exponential backoff for retries
+3. Check the X-RateLimit-Remaining header to monitor usage
+4. Consider caching responses to reduce API calls"</div>
+                    
+                    <h4>For Integration Task Errors (11000)</h4>
+                    <div class="example-box">"When a project is connected to an external integration (like Jira or Redmine), tasks must be created in that external system rather than through the Hubstaff API. The integration will automatically sync tasks to Hubstaff. This is by design to maintain data consistency between systems."</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
     <script>
         // Error codes database from Hubstaff API
@@ -1383,10 +1952,13 @@ for (const match of matches) {
             }
         });
 
-        // Close modal on Escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
-        });
+        // Close modals on Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeModal();
+        closeHelpModal();
+    }
+});
 
         // Search API Hub
 function searchApiHub(query) {
@@ -1435,6 +2007,36 @@ function clearUsageStats() {
         renderUsageStats();
     }
 }
+
+        // Help Modal Functions
+function openHelpModal() {
+    document.getElementById('helpModal').classList.add('visible');
+}
+
+function closeHelpModal() {
+    document.getElementById('helpModal').classList.remove('visible');
+}
+
+function showHelpTab(tabId) {
+    // Update nav buttons
+    document.querySelectorAll('.help-nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Update tab content
+    document.querySelectorAll('.help-tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.getElementById('help-' + tabId).classList.add('active');
+}
+
+// Close help modal on overlay click
+document.getElementById('helpModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('helpModal')) {
+        closeHelpModal();
+    }
+});
 
         // Initialize
 renderErrorList();
