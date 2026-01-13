@@ -1352,6 +1352,13 @@ When attempting to create a task in a project linked to Redmine, we receive:
                             </tr>
                         </table>
                     </div>
+
+                    <div class="help-section">
+                        <h3>📡 Data Source</h3>
+                        <p>All 47 error codes come from the official Hubstaff API endpoint:</p>
+                        <div class="example-box">GET https://api.hubstaff.com/v2/error_codes</div>
+                        <p style="margin-top: 12px;">Documentation: <a href="https://developer.hubstaff.com/docs/hubstaff_v2#tag/errors" target="_blank" style="color: var(--primary);">developer.hubstaff.com/docs/hubstaff_v2#tag/errors</a></p>
+                    </div>
                 </div>
 
                 <!-- Analyzer Help -->
@@ -1369,6 +1376,14 @@ When attempting to create a task in a project linked to Redmine, we receive:
                             <tr><td>Endpoint</td><td><code>/v2/tasks</code></td><td>API feature being used</td></tr>
                             <tr><td>Context</td><td>task, project</td><td>Keywords for matching</td></tr>
                         </table>
+
+                        <h4>Example Error Format</h4>
+                        <p>Customers typically paste errors that look like this:</p>
+                        <div class="example-box">{
+  "code": "invalid_params",
+  "error_code": 11000,
+  "error": "Can not create a task for a project with a task integration"
+}</div>
                     </div>
                 </div>
 
@@ -1385,6 +1400,13 @@ When attempting to create a task in a project linked to Redmine, we receive:
                             <tr><td>⏰ Time/Activity</td><td>14000-14999</td><td>Time entries, timesheets</td></tr>
                             <tr><td>⚙️ System</td><td>15000-15999</td><td>Server errors, timeouts</td></tr>
                         </table>
+
+                        <div class="help-callout info" style="margin-top: 20px;">
+                            <div class="help-callout-title">ℹ️ Important: Error Code Coverage</div>
+                            <p><strong>Current state:</strong> Structured error codes (with <code>error_code</code> numbers) are currently only returned by <strong>time entry creation endpoints</strong>.</p>
+                            <p style="margin-top: 8px;"><strong>General errors:</strong> Auth/permission errors (10xxx) and resource errors (12xxx like "not_found") work across <strong>all API endpoints</strong>.</p>
+                            <p style="margin-top: 8px;"><strong>Future:</strong> Engineering is working to add structured error codes to all Public API endpoints.</p>
+                        </div>
                     </div>
                 </div>
 
@@ -1394,12 +1416,27 @@ When attempting to create a task in a project linked to Redmine, we receive:
                         <h3>📘 API Terms Explained</h3>
                         <table class="help-table">
                             <tr><th>Term</th><th>Simple Explanation</th></tr>
-                            <tr><td><strong>API</strong></td><td>A way for software to talk to Hubstaff</td></tr>
-                            <tr><td><strong>Endpoint</strong></td><td>A specific address like <code>/v2/projects</code></td></tr>
-                            <tr><td><strong>Token</strong></td><td>A secret key that identifies the user</td></tr>
+                            <tr><td><strong>API</strong></td><td>A way for software to talk to Hubstaff programmatically</td></tr>
+                            <tr><td><strong>Endpoint</strong></td><td>A specific address like <code>/v2/projects</code> or <code>/v2/tasks</code></td></tr>
+                            <tr><td><strong>Token</strong></td><td>A secret key that identifies the user making API requests</td></tr>
+                            <tr><td><strong>PAT</strong></td><td>Personal Access Token - a long-lived token for API access</td></tr>
+                            <tr><td><strong>OAuth</strong></td><td>A secure authorization method used by Hubstaff's API</td></tr>
                             <tr><td><strong>JSON</strong></td><td>Data format like <code>{"key": "value"}</code></td></tr>
-                            <tr><td><strong>Rate Limit</strong></td><td>Max requests allowed (350/minute)</td></tr>
-                            <tr><td><strong>Scope</strong></td><td>What a token can do (read vs write)</td></tr>
+                            <tr><td><strong>Rate Limit</strong></td><td>Max requests allowed - Hubstaff allows 350/minute</td></tr>
+                            <tr><td><strong>Scope</strong></td><td>What a token can do (<code>hubstaff:read</code> vs <code>hubstaff:write</code>)</td></tr>
+                            <tr><td><strong>Pagination</strong></td><td>Splitting large results into pages to avoid timeouts</td></tr>
+                        </table>
+
+                        <h4 style="margin-top: 24px;">HTTP Status Codes</h4>
+                        <table class="help-table">
+                            <tr><th>Code</th><th>Meaning</th><th>Customer Explanation</th></tr>
+                            <tr><td><code>200</code></td><td>OK</td><td>Request worked! ✓</td></tr>
+                            <tr><td><code>400</code></td><td>Bad Request</td><td>Something wrong with the request data</td></tr>
+                            <tr><td><code>401</code></td><td>Unauthorized</td><td>Token is invalid or expired</td></tr>
+                            <tr><td><code>403</code></td><td>Forbidden</td><td>Token works but no permission</td></tr>
+                            <tr><td><code>404</code></td><td>Not Found</td><td>Resource doesn't exist or no access</td></tr>
+                            <tr><td><code>429</code></td><td>Too Many Requests</td><td>Hit rate limit - slow down</td></tr>
+                            <tr><td><code>500</code></td><td>Server Error</td><td>Problem on Hubstaff's side</td></tr>
                         </table>
                     </div>
                 </div>
@@ -1407,21 +1444,44 @@ When attempting to create a task in a project linked to Redmine, we receive:
                 <!-- Pro Tips -->
                 <div class="help-tab-content" id="help-tips">
                     <div class="help-section">
-                        <h3>💡 Pro Tips</h3>
+                        <h3>💡 Pro Tips for API Support</h3>
                         
                         <div class="help-callout">
                             <div class="help-callout-title">🎯 Ask for the Full Error</div>
-                            <p>If a customer just says "I got an error", ask them to send the complete error response including any JSON.</p>
+                            <p>If a customer just says "I got an error", ask them to send the complete error response including any JSON. The more detail, the faster you can help!</p>
                         </div>
                         
                         <div class="help-callout info">
                             <div class="help-callout-title">📋 Integration Errors (11000)</div>
-                            <p>If the error mentions "task integration", the customer is trying to create tasks via API for an integrated project (Jira, Redmine). Tasks must be created in the source system, not via API.</p>
+                            <p>If error 11000 mentions "task integration", the customer is trying to create tasks via API for an integrated project (Jira, Redmine, Asana, etc.). <strong>Tasks must be created in the source system</strong>, not via the Hubstaff API - the integration syncs them automatically.</p>
+                        </div>
+
+                        <div class="help-callout info">
+                            <div class="help-callout-title">⏱️ Manual Time Approval (14001)</div>
+                            <p>This is an <strong>organization policy setting</strong>, not a bug. If the org has "Require approval for manual time" enabled, time entries can't be added via API - they must go through the web app for manager approval.</p>
+                        </div>
+
+                        <div class="help-callout info">
+                            <div class="help-callout-title">🚦 Rate Limits (13000)</div>
+                            <p>Hubstaff allows <strong>350 requests per minute</strong>. If customers hit this, suggest: adding delays between calls, implementing exponential backoff, caching responses, and checking the <code>X-RateLimit-Remaining</code> header.</p>
                         </div>
                         
                         <div class="help-callout warning">
                             <div class="help-callout-title">⚠️ When to Escalate</div>
-                            <p>Escalate to engineering if you see persistent 15000 (system error) or 15001 (timeout) errors, or any error that doesn't match the customer's action.</p>
+                            <p>Escalate to engineering if you see:</p>
+                            <ul style="margin: 8px 0 0 20px;">
+                                <li>Persistent <strong>15000</strong> (system error) after customer retries</li>
+                                <li>Persistent <strong>15001</strong> (timeout) even with small data requests</li>
+                                <li>Any error that doesn't match the customer's described action</li>
+                                <li>Errors appearing on endpoints where they shouldn't apply</li>
+                            </ul>
+                        </div>
+
+                        <div class="help-callout">
+                            <div class="help-callout-title">📚 Useful Links</div>
+                            <p style="margin-bottom: 8px;"><strong>API Documentation:</strong> <a href="https://developer.hubstaff.com/docs/hubstaff_v2" target="_blank" style="color: var(--primary);">developer.hubstaff.com/docs/hubstaff_v2</a></p>
+                            <p style="margin-bottom: 8px;"><strong>Authentication Guide:</strong> <a href="https://developer.hubstaff.com/authentication" target="_blank" style="color: var(--primary);">developer.hubstaff.com/authentication</a></p>
+                            <p><strong>Error Codes Endpoint:</strong> <code>GET /v2/error_codes</code></p>
                         </div>
                     </div>
                 </div>
